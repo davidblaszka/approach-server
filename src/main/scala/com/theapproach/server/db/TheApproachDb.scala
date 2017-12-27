@@ -18,9 +18,7 @@ class TheApproachDb @Inject()(val driver: JdbcProfile) {
 
   class Users(tag: Tag) extends Table[(Int, String)](tag, "users") {
     def id = column[Int]("id")
-
     def username = column[String]("username")
-
     def * = (id, username)
   }
 

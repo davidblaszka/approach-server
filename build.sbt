@@ -19,31 +19,30 @@ lazy val versions = new {
 
 resolvers ++= Seq(
   Resolver.sonatypeRepo("releases"),
-  "Twitter Maven" at "https://maven.twttr.com"
+  "Twitter Maven" at "https://maven.twttr.com",
+  Resolver.url("bintray-sbt-plugins", url("https://dl.bintray.com/eed3si9n/sbt-plugins/"))(Resolver.ivyStylePatterns)
 )
 
 libraryDependencies ++= Seq(
+  "com.twitter" %% "finatra-http" % versions.finatra,
+  "com.twitter" %% "finatra-jackson" % versions.finatra,
+  "com.twitter" %% "inject-server" % versions.finatra,
+  "com.twitter" %% "inject-app" % versions.finatra,
+  "com.twitter" %% "inject-modules" % versions.finatra,
+  "ch.qos.logback" % "logback-classic" % versions.logback,
+  "com.google.inject" % "guice" % "4.1.0",
+  "org.postgresql" % "postgresql" % versions.postgresql,
 
+  "com.typesafe.slick" %% "slick" % versions.slick,
+
+  "com.h2database" % "h2" % "1.4.181"
 )
 
+mainClass in(Compile, run) := Some("com.theapproach.server.App")
 
 
-lazy val server = project.
-  settings(Seq(
-    name := "approach-server",
-    libraryDependencies ++= Seq(
-      "com.twitter" %% "finatra-http" % versions.finatra,
-      "com.twitter" %% "finatra-jackson" % versions.finatra,
-      "com.twitter" %% "inject-server" % versions.finatra,
-      "com.twitter" %% "inject-app" % versions.finatra,
-      "com.twitter" %% "inject-modules" % versions.finatra,
-      "ch.qos.logback" % "logback-classic" % versions.logback,
-      "com.google.inject" % "guice" % "4.1.0",
-      "org.postgresql" % "postgresql" % versions.postgresql,
-
-      "com.typesafe.slick" %% "slick" % versions.slick,
-
-      "com.h2database" % "h2" % "1.4.181"
-    )
-  ))
+assemblyMergeStrategy in assembly := {
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case x => MergeStrategy.first
+}
 
