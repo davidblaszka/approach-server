@@ -34,4 +34,8 @@ class ApproachController @Inject()(
     db.getUsers()
   }
 
+  get("/route_page/:id") { request: Request =>
+    db.getUsers()
+  }
+
 }
