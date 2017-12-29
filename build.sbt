@@ -38,11 +38,7 @@ libraryDependencies ++= Seq(
   "com.h2database" % "h2" % "1.4.181"
 )
 
-mainClass in(Compile, run) := Some("com.theapproach.server.App")
-
-
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", xs @ _*) => MergeStrategy.discard
   case x => MergeStrategy.first
 }
-

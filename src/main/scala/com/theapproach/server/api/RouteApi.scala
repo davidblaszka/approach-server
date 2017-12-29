@@ -14,21 +14,22 @@ class RouteApi @Inject()(
   db: DbAccess
 ) {
 
-  def getRouteAndAssociatedData(id: RouteId): Future[RoutePageResultData] = {
-    db.getDataForRoutePage(id).map((data: Map[RouteDAO, Seq[ImageDAO]]) => {
+  def getRouteAndAssociatedData(id: RouteId): Future[Option[RoutePageResult]] = {
+    db.getDataForRoutePage(id).map(_.map(data => {
 
-      ???
-//      RoutePageResultData()
-    })
+      RoutePageResult(
+        route = RouteConversions.fromDAO(data.route),
+        images = data.images.map(ImageConversions.fromDAO)
+      )
+    }))
   }
 }
 
-case class RoutePageResultData(
+case class RoutePageResult(
   route: Route,
   images: List[Image],
-  title: String,
-  locationData: Location, // optional???
-  zoneData: Option[Location],
-  routeMetadata: RouteMetadata,
-  offers: List[Offer]
+//  locationData: Location, // optional???
+//  zoneData: Option[Location],
+//  routeMetadata: RouteMetadata,
+//  offers: List[Offer]
 )

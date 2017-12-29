@@ -1,7 +1,9 @@
 package com.theapproach.server
 
 import com.google.inject.{Inject, Module}
+import com.theapproach.server.api.RouteApi
 import com.theapproach.server.db.TheApproachDb
+import com.theapproach.server.model.RouteId
 import com.theapproach.server.modules.Modules
 import com.twitter.finagle.http.Request
 import com.twitter.finatra.http.routing.HttpRouter
@@ -23,19 +25,19 @@ class ApproachServer extends HttpServer {
 }
 
 class ApproachController @Inject()(
-  db: TheApproachDb
+  api: RouteApi
 ) extends Controller {
 
   get("/hello") { request: Request =>
     "Fitman says hello"
   }
 
-  get("/users") { request: Request =>
-    db.getUsers()
-  }
-
   get("/route_page/:id") { request: Request =>
-    db.getUsers()
+    val routeId = RouteId(request.params("id").toLong)
+
+    logger.debug(s"Called route_page/${routeId.value}")
+
+    api.getRouteAndAssociatedData(routeId)
   }
 
 }
