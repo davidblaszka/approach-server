@@ -29,7 +29,8 @@ object RouteConversions {
   def fromDAO(dao: RouteDAO): Route = {
     Route(
       RouteId(dao.id),
-      locationId = LocationId(dao.locationId)
+      locationId = LocationId(dao.locationId),
+      title = dao.title
     )
   }
 }

@@ -57,5 +57,6 @@ case class Guide(
 
 case class Route(
   id: RouteId,
-  locationId: LocationId
+  locationId: LocationId,
+  title: String
 )

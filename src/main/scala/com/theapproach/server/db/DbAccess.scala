@@ -21,7 +21,8 @@ case class ImageDAO(
 
 case class RouteDAO(
   id: Long,
-  locationId: Long
+  locationId: Long,
+  title: String
 )
 
 class IterableForGroupableMap[S, T](t: Iterable[(S, T)]) {
@@ -58,7 +59,9 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
 
     def locationId = column[Long]("location_id")
 
-    def * = (id, locationId) <> (RouteDAO.tupled, RouteDAO.unapply)
+    def title = column[String]("title")
+
+    def * = (id, locationId, title) <> (RouteDAO.tupled, RouteDAO.unapply)
   }
 
   val routes: TableQuery[RouteTable] = TableQuery[RouteTable]
@@ -74,6 +77,7 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
 
   def getDataForRoutePage(id: RouteId): Future[Option[RoutePageData]] = {
     val query = routes
+      .filter(_.id === id.value)
       .join(images).on(_.id === _.routeId)
       .result
 
