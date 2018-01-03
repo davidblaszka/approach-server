@@ -8,35 +8,58 @@ import org.joda.time.DateTime
 
 
 case class ImageId(value: Long)
-case class RouteId(value: Long)
 case class LocationId(value: Long)
+case class LocationMetadataId(value: Long)
 case class OfferId(value: Long)
 case class GuideId(value: Long)
 
-case class RouteRating(
+case class Rating(
   average: Double
 )
 
-case class RouteMetadata(
-  rating: Option[RouteRating]
+case class State(
+  name: String
+)
+
+case class Country(
+  name: String
+)
+
+case class LocationMetadata(
+  id: Long,
+  rating: Option[Rating]
 //   Grade???
 //  distance...
 )
 
-
 case class Location(
   id: LocationId,
+  created: DateTime,
+  modified: DateTime,
+  metadataId: LocationMetadataId,
   title: String,
+  locationType: Long,
   zoneId: Option[LocationId],
-  regionId: Option[LocationId]
+  zoneName: Option[String],
+  areaId: Option[LocationId],
+  areaName: Option[String],
+  regionId: LocationId,
+  regionName: String,
+  state: State,
+  country: Country
 )
+
+// Metadata
+//    million columns
+//    ui does the work of untangling
+      // if type==climp... show some rollup
 
 case class Image(
   id: ImageId,
   url: String,
   created: DateTime,
   offerId: Option[OfferId],
-  routeId: Option[RouteId],
+  locationId: Option[LocationId],
   guideId: Option[GuideId]
 )
 
@@ -53,10 +76,4 @@ case class Offer(
 
 case class Guide(
   id: GuideId
-)
-
-case class Route(
-  id: RouteId,
-  locationId: LocationId,
-  title: String
 )
