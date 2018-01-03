@@ -35,7 +35,9 @@ libraryDependencies ++= Seq(
 
   "com.typesafe.slick" %% "slick" % versions.slick,
 
-  "com.h2database" % "h2" % "1.4.181"
+  "com.h2database" % "h2" % "1.4.181",
+
+  "io.paradoxical" %% "paradox-scala-global" % "1.1"
 )
 
 assemblyMergeStrategy in assembly := {

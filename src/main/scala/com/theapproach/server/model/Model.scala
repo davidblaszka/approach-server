@@ -5,13 +5,13 @@
 package com.theapproach.server.model
 
 import org.joda.time.DateTime
+import io.paradoxical.global.tiny._
 
-
-case class ImageId(value: Long)
-case class LocationId(value: Long)
-case class LocationMetadataId(value: Long)
-case class OfferId(value: Long)
-case class GuideId(value: Long)
+case class ImageId(value: Long) extends LongValue
+case class LocationId(value: Long) extends LongValue
+case class LocationMetadataId(value: Long) extends LongValue
+case class OfferId(value: Long) extends LongValue
+case class GuideId(value: Long) extends LongValue
 
 case class Rating(
   average: Double
