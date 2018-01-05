@@ -19,13 +19,16 @@ CREATE TABLE location(
   primary key(id)
 );
 
+CREATE INDEX location_parent on location(parent_location_id);
 CREATE INDEX location_zone ON location(zone_id);
 CREATE INDEX location_area ON location(area_id);
 CREATE INDEX location_region ON location(region_id);
 
-insert into location (title, region_id, region_name, location_type, metadata_id, created, modified, state, country)
+insert into location (id, title, region_id, region_name, location_type, metadata_id, created, modified, state, country, parent_location_id)
 VALUES
-  ('Emmons-Winthrop Glacier', 1, 'Mount Rainier National Park', 0, 0, 0, 0, 'CA', 'USA');
+  (1, 'Mount Rainier',      1, 'Mount Rainier National Park', 0, 0, 0, 0, 'CA', 'USA', NULL),
+  (2, 'Rainier Route #1',   1, 'Mount Rainier National Park', 0, 0, 0, 0, 'CA', 'USA', 1),
+  (3, 'Mount Rainier Zone', 1, 'Mount Rainier National Park', 0, 0, 0, 0, 'CA', 'USA', 1);
 
 CREATE TABLE image(
   id bigserial NOT NULL,
@@ -44,4 +47,7 @@ CREATE INDEX image_guide ON image(guide_id);
 insert into image(url, created, location_id)
 VALUES
   ('http://www.backgroundbandit.com/wallpapers/31/700.jpg', 0, 1),
-  ('https://justinpluslauren.com/wp-content/gallery/niagara-falls-in-winter/20150125_150709.jpg', 0, 2);
+  ('https://justinpluslauren.com/wp-content/gallery/niagara-falls-in-winter/20150125_150709.jpg', 0, 1),
+  ('https://justinpluslauren.com/wp-content/gallery/niagara-falls-in-winter/20150125_150709.jpg', 0, 2),
+  ('https://justinpluslauren.com/wp-content/gallery/niagara-falls-in-winter/20150125_150709.jpg', 0, 3);
+

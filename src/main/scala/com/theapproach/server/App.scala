@@ -1,7 +1,7 @@
 package com.theapproach.server
 
 import com.google.inject.{Inject, Module}
-import com.theapproach.server.api.RouteApi
+import com.theapproach.server.api.LocationApi
 import com.theapproach.server.model.LocationId
 import com.theapproach.server.modules.Modules
 import com.twitter.finagle.http.{Request, Response}
@@ -9,11 +9,19 @@ import com.twitter.finatra.http.filters.{CommonFilters, LoggingMDCFilter, TraceI
 import com.twitter.finatra.http.routing.HttpRouter
 import com.twitter.finatra.http.{Controller, HttpServer}
 import com.twitter.util.{Future => TwitterFuture}
+import io.paradoxical.finatra.HttpServiceBase
+import io.paradoxical.finatra.swagger.ApiDocumentationConfig
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object App extends ApproachServer {}
 
-class ApproachServer extends HttpServer {
+class ApproachServer extends HttpServiceBase {
+
+  override def documentation = new ApiDocumentationConfig {
+    override val description: String = "Sample"
+    override val title: String = "API"
+    override val version: String = "1.0"
+  }
 
   override def modules: Seq[Module] = Modules()
 
@@ -27,7 +35,7 @@ class ApproachServer extends HttpServer {
 }
 
 class ApproachController @Inject()(
-  api: RouteApi
+  api: LocationApi
 ) extends Controller {
 
   get("/hello") { request: Request =>

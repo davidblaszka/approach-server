@@ -98,31 +98,30 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
   val db = Database.forConfig("database")
 
 
-  def getDataForLocationPage(id: LocationId): Future[Option[RoutePageData]] = {
+  def getLocationData(id: LocationId): Future[List[LocationAndImage]] = {
     val action = for {
-      locationResult <- locationQuery if locationResult.id === id.value
+      locationResult <- locationQuery if locationResult.id === id.value || locationResult.parentLocationId === id.value
       imageResult <- imageQuery if imageResult.locationId === locationResult.id
     } yield (locationResult, imageResult)
 
     val query = action.result.map((rows: Seq[(LocationDAO, ImageDAO)]) => {
-      val imageDaos = rows.map(_._2)
+      val locationToImage = rows.groupBy(_._1).mapValues(_.map(_._2))
 
-      for {
-        locationDao <- rows.headOption.map(_._1)
-      } yield {
-        RoutePageData(
-          location = locationDao,
-          images = imageDaos.toList
-        )
-      }
+      locationToImage.map {
+        case (locationResult, imageResults) => {
+          LocationAndImage(
+            location = locationResult,
+            images = imageResults.toList
+          )
+        }
+      }.toList
     })
 
     db.run(query)
   }
 }
 
-case class RoutePageData(
+case class LocationAndImage(
   location: LocationDAO,
   images: List[ImageDAO]
 )
-

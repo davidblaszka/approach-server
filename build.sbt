@@ -37,7 +37,10 @@ libraryDependencies ++= Seq(
 
   "com.h2database" % "h2" % "1.4.181",
 
-  "io.paradoxical" %% "paradox-scala-global" % "1.1"
+  //  anton's tiny type stuff
+  "io.paradoxical" %% "paradox-scala-global" % "1.1",
+
+  "io.paradoxical" %%  "finatra-server" % "1.0.4"
 )
 
 assemblyMergeStrategy in assembly := {
