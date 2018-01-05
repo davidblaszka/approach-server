@@ -38,10 +38,6 @@ class ApproachController @Inject()(
   api: LocationApi
 ) extends Controller {
 
-  get("/hello") { request: Request =>
-    "Fitman says hello"
-  }
-
   get("/location_page/:id") { request: Request =>
     val locationId = LocationId(request.params("id").toLong)
 

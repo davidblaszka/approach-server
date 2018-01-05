@@ -25,13 +25,15 @@ object LocationApi {
 }
 
 class LocationApi @Inject()(
-  db: DbAccess
+  db: DbAccess,
+  reviewDb: ReviewDb
 ) {
   import LocationApi._
 
   def getLocationAndAssociatedData(id: LocationId): Future[Option[LocationPageResult]] = {
     for {
       locationPageData <- db.getLocationData(id)
+      reviewData <- reviewDb.getReviewDataForLocation(id)
     } yield {
       val primaryPageOpt = locationPageData.find(_.location.id == id.value)
 
@@ -39,7 +41,8 @@ class LocationApi @Inject()(
         LocationPageResult(
           location = LocationConversions.fromDAO(primaryPage.location),
           images = primaryPage.images.map(ImageConversions.fromDAO),
-          subLocations = selectSubLocationData(id, locationPageData)
+          subLocations = selectSubLocationData(id, locationPageData),
+          reviews = reviewData
         )
       })
     }
@@ -49,7 +52,8 @@ class LocationApi @Inject()(
 case class LocationPageResult(
   location: Location,
   images: List[Image],
-  subLocations: List[SubLocationResult]
+  subLocations: List[SubLocationResult],
+  reviews: List[LocationReviewResponse]
 //  zoneData: Option[Location],
 //  routeMetadata: RouteMetadata,
 //  offers: List[Offer]

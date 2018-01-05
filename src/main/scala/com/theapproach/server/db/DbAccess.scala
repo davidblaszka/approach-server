@@ -16,7 +16,9 @@ case class ImageDAO(
   created: Long,
   offerId: Option[Long],
   locationId: Option[Long],
-  guideId: Option[Long]
+  guideId: Option[Long],
+  reviewId: Option[Long],
+  position: Option[Long]
 )
 
 case class LocationDAO(
@@ -37,6 +39,16 @@ case class LocationDAO(
   country: String
 )
 
+case class ReviewDAO(
+  id: Long,
+  locationId: Option[Long],
+  user_id: Long,
+  created: Long,
+  title: String,
+  reviewText: Option[String],
+  rating: Option[Double]
+)
+
 class DbAccess @Inject()(val driver: JdbcProfile) {
 
   import driver.api._
@@ -54,7 +66,11 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
 
     def guideId = column[Option[Long]]("guide_id")
 
-    def * = (id, url, timeCreated, offerId, locationId, guideId) <> (ImageDAO.tupled, ImageDAO.unapply)
+    def reviewId = column[Option[Long]]("review_id")
+
+    def position = column[Option[Long]]("position")
+
+    def * = (id, url, timeCreated, offerId, locationId, guideId, reviewId, position) <> (ImageDAO.tupled, ImageDAO.unapply)
 
     def route = foreignKey("location", locationId, locationQuery)(_.id)
   }
@@ -93,9 +109,23 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
     def * = (id, parentLocationId, created, modified, metadataId, title, locationType, zoneId, zoneName, areaId, areaName, regionId, regionName, state, country) <> (LocationDAO.tupled, LocationDAO.unapply)
   }
 
-  val imageQuery: TableQuery[ImageTable] = TableQuery[ImageTable]
-  val locationQuery: TableQuery[LocationTable] = TableQuery[LocationTable]
-  val db = Database.forConfig("database")
+
+  class ReviewTable(tag: Tag) extends Table[ReviewDAO](tag, "review") {
+    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+    def locationId = column[Option[Long]]("location_id")
+    def userId = column[Long]("user_id")
+    def created = column[Long]("created")
+    def title = column[String]("title")
+    def reviewText = column[Option[String]]("review_text")
+    def rating = column[Option[Double]]("rating")
+
+    def * = (id, locationId, userId, created, title, reviewText, rating) <> (ReviewDAO.tupled, ReviewDAO.unapply)
+  }
+
+  protected lazy val imageQuery: TableQuery[ImageTable] = TableQuery[ImageTable]
+  protected lazy val locationQuery: TableQuery[LocationTable] = TableQuery[LocationTable]
+  protected lazy val reviewQuery: TableQuery[ReviewTable] = TableQuery[ReviewTable]
+  protected lazy val db = Database.forConfig("database")
 
 
   def getLocationData(id: LocationId): Future[List[LocationAndImage]] = {
