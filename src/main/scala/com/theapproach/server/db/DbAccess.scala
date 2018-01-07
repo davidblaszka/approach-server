@@ -149,6 +149,34 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
 
     db.run(query)
   }
+
+  def getReviewDataForLocation(id: LocationId): Future[List[LocationReviewResponse]] = {
+    val action = for {
+      (reviews, images) <- reviewQuery.filter(_.locationId === id.value) joinLeft imageQuery on (_.id === _.reviewId)
+    } yield (reviews, images)
+
+
+    val query = action.result.map((rows: Seq[(ReviewDAO, Option[ImageDAO])]) => {
+      val locationToImage: Map[ReviewDAO, Seq[ImageDAO]] = rows.groupBy(_._1).mapValues(_.flatMap(_._2))
+
+      locationToImage.map {
+        case (reviewDao, imageDaos) => {
+          LocationReviewResponse(
+            review = reviewDao,
+            images = imageDaos.toList
+          )
+        }
+      }.toList
+    })
+
+    db.run(query)
+  }
+
+  def getSingle(): Future[Any] = {
+    val q = reviewQuery.filter(_.id === 1L).result
+
+    db.run(q)
+  }
 }
 
 case class LocationAndImage(

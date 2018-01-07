@@ -18,12 +18,12 @@ case class Rating(
 )
 
 case class State(
-  name: String
-)
+  value: String
+) extends StringValue
 
 case class Country(
-  name: String
-)
+  value: String
+) extends StringValue
 
 case class LocationMetadata(
   id: Long,

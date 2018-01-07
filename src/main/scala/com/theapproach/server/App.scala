@@ -12,6 +12,7 @@ import com.twitter.util.{Future => TwitterFuture}
 import io.paradoxical.finatra.HttpServiceBase
 import io.paradoxical.finatra.swagger.ApiDocumentationConfig
 import scala.concurrent.ExecutionContext.Implicits.global
+import com.theapproach.server.utils.Timing.latency
 
 object App extends ApproachServer {}
 
@@ -41,9 +42,9 @@ class ApproachController @Inject()(
   get("/location_page/:id") { request: Request =>
     val locationId = LocationId(request.params("id").toLong)
 
-    logger.debug(s"Called route_page/${locationId.value}")
+    logger.info(s"Called location_page/${locationId.value}")
 
-    api.getLocationAndAssociatedData(locationId)
+    latency("location_page/${locationId.value}", api.getLocationAndAssociatedData(locationId))
   }
 }
 

@@ -9,6 +9,7 @@ import com.theapproach.server.db._
 import com.theapproach.server.model._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import com.theapproach.server.utils.Timing.latency
 
 object LocationApi {
   def selectSubLocationData(primaryId: LocationId, allLocations: List[LocationAndImage]): List[SubLocationResult] = {
@@ -25,15 +26,16 @@ object LocationApi {
 }
 
 class LocationApi @Inject()(
-  db: DbAccess,
-  reviewDb: ReviewDb
+  db: DbAccess
+//  reviewDb: ReviewDb
 ) {
   import LocationApi._
 
   def getLocationAndAssociatedData(id: LocationId): Future[Option[LocationPageResult]] = {
     for {
-      locationPageData <- db.getLocationData(id)
-      reviewData <- reviewDb.getReviewDataForLocation(id)
+      locationPageData <- latency("DB getLocationData", db.getLocationData(id))
+      reviewData <- latency("DB getReviewDataForLocation", db.getReviewDataForLocation(id))
+      x <- latency("tiny call", db.getSingle)
     } yield {
       val primaryPageOpt = locationPageData.find(_.location.id == id.value)
 

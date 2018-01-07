@@ -43,7 +43,7 @@ CREATE TABLE review(
 );
 
 insert into review(id, location_id, user_id, created, title, rating, review_text)
- VALUES (1, 1, 0, 0, 'No fog', '4.5', 'Once upon a time there was a big fat fucking duck and it fell over and now nobody will ever love me again OK>???? LEABVE ME ND ME CAT ALONE. Need more text dsbfbsd fds fd afds ndsfdijfjadsfjasd'),
+ VALUES (1, 1, 0, 0, 'No fog', '4.5', 'A 10,000 foot glacier climb on the slightly less popular east side of Mount Rainier (originally known as Tahoma). The hike to camp passes through Glacier Basin, site of mining activity up through the 1930''s. The route, including the climb up the Inter Glacier, can get icy by late July, increasing the difficulty.'),
         (2, 1, 0, 0, 'No fog', '3.4', 'Once upon a time there was a big fat fucking duck and it fell over and now nobody will ever love me again OK>???? LEABVE ME ND ME CAT ALONE. Need more text dsbfbsd fds fd afds ndsf ads fn asdfa sdijfjadsfjasd ');
 
 
