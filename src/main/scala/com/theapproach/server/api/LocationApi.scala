@@ -35,7 +35,6 @@ class LocationApi @Inject()(
     for {
       locationPageData <- latency("DB getLocationData", db.getLocationData(id))
       reviewData <- latency("DB getReviewDataForLocation", db.getReviewDataForLocation(id))
-      x <- latency("tiny call", db.getSingle)
     } yield {
       val primaryPageOpt = locationPageData.find(_.location.id == id.value)
 

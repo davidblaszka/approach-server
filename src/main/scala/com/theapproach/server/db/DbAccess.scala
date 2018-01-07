@@ -127,8 +127,10 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
   protected lazy val reviewQuery: TableQuery[ReviewTable] = TableQuery[ReviewTable]
   protected lazy val db = Database.forConfig("database")
 
+  protected val logger = org.slf4j.LoggerFactory.getLogger(getClass)
 
   def getLocationData(id: LocationId): Future[List[LocationAndImage]] = {
+    logger.info("Starting getLocationData call")
     val action = for {
       locationResult <- locationQuery if locationResult.id === id.value || locationResult.parentLocationId === id.value
       imageResult <- imageQuery if imageResult.locationId === locationResult.id
@@ -151,6 +153,8 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
   }
 
   def getReviewDataForLocation(id: LocationId): Future[List[LocationReviewResponse]] = {
+    logger.info("Starting getReviewData call")
+
     val action = for {
       (reviews, images) <- reviewQuery.filter(_.locationId === id.value) joinLeft imageQuery on (_.id === _.reviewId)
     } yield (reviews, images)
@@ -173,6 +177,8 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
   }
 
   def getSingle(): Future[Any] = {
+    logger.info("Starting getSingle call")
+
     val q = reviewQuery.filter(_.id === 1L).result
 
     db.run(q)
