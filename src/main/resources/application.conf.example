@@ -1,0 +1,7 @@
+database = {
+  driver = "org.postgresql.Driver"
+  user = "<username>"
+  password = "<password>"
+  url = "jdbc:postgresql:/<host>:<port>/<dbName>"
+  connectionTimeout = "10s"
+}
