@@ -29,3 +29,4 @@ version.properties
 RUNNING_PID
 jd-gui.cfg
 
+src/main/resources/application.conf
