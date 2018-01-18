@@ -1,8 +1,8 @@
 package com.theapproach.server
 
 import com.google.inject.{Inject, Module}
-import com.theapproach.server.api.LocationApi
-import com.theapproach.server.model.LocationId
+import com.theapproach.server.api.{LocationApi, OfferApi}
+import com.theapproach.server.model.{LocationId, OfferId}
 import com.theapproach.server.modules.Modules
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finatra.http.filters.{CommonFilters, LoggingMDCFilter, TraceIdMDCFilter}
@@ -36,7 +36,8 @@ class ApproachServer extends HttpServiceBase {
 }
 
 class ApproachController @Inject()(
-  api: LocationApi
+  locationApi: LocationApi,
+  offerApi: OfferApi
 ) extends Controller {
 
   get("/location_page/:id") { request: Request =>
@@ -44,7 +45,16 @@ class ApproachController @Inject()(
 
     logger.info(s"Called location_page/${locationId.value}")
 
-    latency("location_page/${locationId.value}", api.getLocationAndAssociatedData(locationId))
+    latency("location_page/${locationId.value}", locationApi.getLocationAndAssociatedData(locationId))
+  }
+
+  get("/offer_page/:id") { request: Request =>
+    val offerId = OfferId(request.params("id").toLong)
+
+    logger.info(s"Called offer_page/${offerId.value}")
+
+    latency(s"location_page/${offerId.value}", offerApi.getOfferPageData(offerId))
+
   }
 }
 

@@ -4,7 +4,7 @@
 
 package com.theapproach.server.model
 
-import com.theapproach.server.db.{ImageDAO, LocationDAO}
+import com.theapproach.server.db._
 import org.joda.time.{DateTime, DateTimeZone}
 
 object ImageConversions {
@@ -38,6 +38,34 @@ object LocationConversions {
       regionName = dao.regionName,
       state = State(dao.state),
       country = Country(dao.country)
+    )
+  }
+}
+
+object OfferConversions {
+  def fromDAO(dao: OfferDAO): Offer = {
+    Offer(
+      id = OfferId(dao.id),
+      created = new DateTime(dao.created, DateTimeZone.UTC),
+      updated = new DateTime(dao.updated, DateTimeZone.UTC),
+      guideId = GuideId(dao.guideId),
+      locationId = LocationId(dao.locationId),
+      heading = dao.heading,
+      description = dao.description,
+      itinerary = dao.itinerary
+    )
+  }
+}
+
+object GuideConversions {
+  def fromDAO(dao: GuideDAO): Guide = {
+    Guide(
+      id = GuideId(dao.id),
+      created = new DateTime(dao.created, DateTimeZone.UTC),
+      updated = new DateTime(dao.updated, DateTimeZone.UTC),
+      name = dao.name,
+      location = dao.location,
+      aboutInfo = dao.aboutInfo
     )
   }
 }

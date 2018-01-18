@@ -56,24 +56,29 @@ case class Location(
 
 case class Image(
   id: ImageId,
-  url: String,
   created: DateTime,
+  url: String,
   offerId: Option[OfferId],
   locationId: Option[LocationId],
-  guideId: Option[GuideId]
+  guideId: Option[GuideId],
 )
 
 case class Offer(
   id: OfferId,
-  guideId: GuideId,
   created: DateTime,
   updated: DateTime,
-  startTime: DateTime,
-  endTime: DateTime,
+  guideId: GuideId,
+  locationId: LocationId,
   heading: String,
-  price: Option[String]
+  description: Option[String],
+  itinerary: Option[String]
 )
 
 case class Guide(
-  id: GuideId
+  id: GuideId,
+  created: DateTime,
+  updated: DateTime,
+  name: String,
+  location: Option[String],
+  aboutInfo: Option[String]
 )

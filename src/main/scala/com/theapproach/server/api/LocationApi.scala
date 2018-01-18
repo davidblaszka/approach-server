@@ -12,7 +12,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import com.theapproach.server.utils.Timing.latency
 
 object LocationApi {
-  def selectSubLocationData(primaryId: LocationId, allLocations: List[LocationAndImage]): List[SubLocationResult] = {
+  def selectSubLocationData(primaryId: LocationId, allLocations: List[LocationAndImages]): List[SubLocationResult] = {
     allLocations.filter(_.location.id != primaryId.value).map(locationData => {
       SubLocationResult(
         LocationConversions.fromDAO(locationData.location),

@@ -5,49 +5,11 @@
 package com.theapproach.server.db
 
 import com.google.inject.Inject
-import com.theapproach.server.model.LocationId
+import com.theapproach.server.model.{LocationId, OfferId}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import slick.jdbc.JdbcProfile
 
-case class ImageDAO(
-  id: Long,
-  url: String,
-  created: Long,
-  offerId: Option[Long],
-  locationId: Option[Long],
-  guideId: Option[Long],
-  reviewId: Option[Long],
-  position: Option[Long]
-)
-
-case class LocationDAO(
-  id: Long,
-  parentLocationId: Option[Long],
-  created: Long,
-  modified: Long,
-  metadataId: Long,
-  title: String,
-  locationType: Long,
-  zoneId: Option[Long],
-  zoneName: Option[String],
-  areaId: Option[Long],
-  areaName: Option[String],
-  regionId: Long,
-  regionName: String,
-  state: String,
-  country: String
-)
-
-case class ReviewDAO(
-  id: Long,
-  locationId: Option[Long],
-  user_id: Long,
-  created: Long,
-  title: String,
-  reviewText: Option[String],
-  rating: Option[Double]
-)
 
 class DbAccess @Inject()(val driver: JdbcProfile) {
 
@@ -72,7 +34,9 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
 
     def * = (id, url, timeCreated, offerId, locationId, guideId, reviewId, position) <> (ImageDAO.tupled, ImageDAO.unapply)
 
-    def route = foreignKey("location", locationId, locationQuery)(_.id)
+    def location = foreignKey("location", locationId, locationQuery)(_.id)
+    def guide = foreignKey("guide", guideId, guideQuery)(_.id)
+    def review = foreignKey("review", reviewId, reviewQuery)(_.id)
   }
 
   class LocationTable(tag: Tag) extends Table[LocationDAO](tag, "location") {
@@ -109,7 +73,6 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
     def * = (id, parentLocationId, created, modified, metadataId, title, locationType, zoneId, zoneName, areaId, areaName, regionId, regionName, state, country) <> (LocationDAO.tupled, LocationDAO.unapply)
   }
 
-
   class ReviewTable(tag: Tag) extends Table[ReviewDAO](tag, "review") {
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def locationId = column[Option[Long]]("location_id")
@@ -122,14 +85,40 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
     def * = (id, locationId, userId, created, title, reviewText, rating) <> (ReviewDAO.tupled, ReviewDAO.unapply)
   }
 
+  class GuideTable(tag: Tag) extends Table[GuideDAO](tag, "guide") {
+    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+    def created = column[Long]("created")
+    def updated = column[Long]("updated")
+    def name = column[String]("name")
+    def location = column[Option[String]]("location")
+    def aboutInfo = column[Option[String]]("about_info")
+
+    def * = (id, created, updated, name, location, aboutInfo) <> (GuideDAO.tupled, GuideDAO.unapply)
+  }
+
+  class OfferTable(tag: Tag) extends Table[OfferDAO](tag, "offer") {
+    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+    def created = column[Long]("created")
+    def updated = column[Long]("updated")
+    def guideId = column[Long]("guide_id")
+    def locationId = column[Long]("location_id")
+    def heading = column[String]("heading")
+    def description = column[Option[String]]("description")
+    def itinerary = column[Option[String]]("itinerary")
+
+    def * = (id, created, updated, guideId, locationId, heading, description, itinerary) <> (OfferDAO.tupled, OfferDAO.unapply)
+  }
+
   protected lazy val imageQuery: TableQuery[ImageTable] = TableQuery[ImageTable]
   protected lazy val locationQuery: TableQuery[LocationTable] = TableQuery[LocationTable]
   protected lazy val reviewQuery: TableQuery[ReviewTable] = TableQuery[ReviewTable]
+  protected lazy val guideQuery: TableQuery[GuideTable] = TableQuery[GuideTable]
+  protected lazy val offerQuery: TableQuery[OfferTable] = TableQuery[OfferTable]
   protected lazy val db = Database.forConfig("database")
 
   protected val logger = org.slf4j.LoggerFactory.getLogger(getClass)
 
-  def getLocationData(id: LocationId): Future[List[LocationAndImage]] = {
+  def getLocationData(id: LocationId): Future[List[LocationAndImages]] = {
     logger.info("Starting getLocationData call")
     val action = for {
       locationResult <- locationQuery if locationResult.id === id.value || locationResult.parentLocationId === id.value
@@ -141,7 +130,7 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
 
       locationToImage.map {
         case (locationResult, imageResults) => {
-          LocationAndImage(
+          LocationAndImages(
             location = locationResult,
             images = imageResults.toList
           )
@@ -176,16 +165,61 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
     db.run(query)
   }
 
-  def getSingle(): Future[Any] = {
-    logger.info("Starting getSingle call")
+  def getOfferData(offerId: OfferId): Future[Option[OfferPageDBResult]] = {
+    logger.info("Starting getOfferData call")
 
-    val q = reviewQuery.filter(_.id === 1L).result
+    val action = for {
+      offerResult <- offerQuery if offerResult.id === offerId.value
+      guideResult <- guideQuery if guideResult.id === offerResult.guideId
+      locationResult <- locationQuery if locationResult.id === offerResult.locationId
+      imageResult <- imageQuery if imageResult.locationId === offerResult.id || imageResult.guideId === offerResult.guideId || imageResult.locationId === offerResult.locationId
+    } yield (offerResult, guideResult, imageResult, locationResult)
 
-    db.run(q)
+    val query = action.result.map((rows: Seq[(OfferDAO, GuideDAO, ImageDAO, LocationDAO)]) => {
+      val groupedOffers: Map[Long, Seq[(OfferDAO, GuideDAO, ImageDAO, LocationDAO)]] = rows.groupBy(_._1.id)
+
+      val specificOfferOpt: Option[Seq[(OfferDAO, GuideDAO, ImageDAO, LocationDAO)]] = groupedOffers.keys.find(_ == offerId.value).flatMap(dao => groupedOffers.get(dao))
+
+      specificOfferOpt.map(results => {
+        val offerDAO = results.head._1
+        val guideDAO = results.head._2
+        val guideImage = results.find(_._3.guideId.exists(_ == guideDAO.id)).getOrElse(throw new Exception("guide has no image"))._3
+        val offerImages = results.filter(_._3.offerId.exists(_ == offerId.value)).map(_._3)
+        val locationDAO = results.head._4
+        val locationImages = results.filter(_._3.locationId.exists(_ == locationDAO.id)).map(_._3)
+
+        OfferPageDBResult(
+          offer = offerDAO,
+          guide = GuideAndImage(
+            guide = guideDAO,
+            image = guideImage
+          ),
+          offerImages = offerImages.toList,
+          location = LocationAndImages(
+            location = locationDAO,
+            images = locationImages.toList
+          )
+        )
+      })
+    })
+
+    db.run(query)
   }
 }
 
-case class LocationAndImage(
+case class OfferPageDBResult(
+  offer: OfferDAO,
+  guide: GuideAndImage,
+  offerImages: List[ImageDAO],
+  location: LocationAndImages
+)
+
+case class GuideAndImage(
+  guide: GuideDAO,
+  image: ImageDAO
+)
+
+case class LocationAndImages(
   location: LocationDAO,
   images: List[ImageDAO]
 )
