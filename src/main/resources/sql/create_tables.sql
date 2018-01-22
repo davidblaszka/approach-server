@@ -44,7 +44,7 @@ insert into guide(id, name, location, about_info) VALUES
   (1, 'RMI Expeditions', 'Seattle, WA', 'Getting safely up and down mountains is just the beginning of the story at Rainier Mountaineering, Inc. (RMI). Founded by the legendary Lou Whittaker and staffed by the most experienced and talented guides in America, RMI has built a four-decade long legacy of safe, successful, and enjoyable mountaineering adventures.'),
   (2, 'Shrek', 'Denver, CO', 'Shrek was founded by Donkey is 2014');
 
-create table offer(
+create table trip(
   id bigserial NOT NULL,
   created bigint not null default 0,
   updated bigint not null default 0,
@@ -56,21 +56,21 @@ create table offer(
   PRIMARY KEY(id)
 );
 
-insert into offer(guide_id, heading, itinerary) VALUES
-  (1, 'Climb a mountain!', 'Arrive in Moscow (SVO). A group transfer is arranged from the airport to our hotel at 4:00 p.m. If your flight arrives earlier in the day, after 3:00 p.m., or if you are arriving at a different airport you can hire a taxi or Uber to get to the hotel.. Once we check-in to our hotel, the afternoon is free to rest and explore the city. A team orientation meeting is held at 7:00 p.m. We spend the night in Moscow at the Park Inn Sadu.')
+insert into trip(guide_id, heading, location_id, itinerary) VALUES
+  (1, 'Climb a mountain!', 1, 'Arrive in Moscow (SVO). A group transfer is arranged from the airport to our hotel at 4:00 p.m. If your flight arrives earlier in the day, after 3:00 p.m., or if you are arriving at a different airport you can hire a taxi or Uber to get to the hotel.. Once we check-in to our hotel, the afternoon is free to rest and explore the city. A team orientation meeting is held at 7:00 p.m. We spend the night in Moscow at the Park Inn Sadu.')
 ;
 
-create table offer_availability(
+create table offer(
   id BIGSERIAL NOT NULL,
   created bigint not null default 0,
   updated bigint not null default 0,
-  offer_id bigint REFERENCES offer(id),
+  offer_id bigint REFERENCES trip(id),
   start_time TIMESTAMP WITH TIME ZONE,
   duration INTERVAL,
   PRIMARY KEY (id)
 );
 
-insert into offer_availability(id, offer_id, start_time, duration) VALUES
+insert into offer(id, offer_id, start_time, duration) VALUES
   (1, 1, now(), '3 days'),
   (2, 1, now(), '1 day');
 
@@ -80,7 +80,7 @@ CREATE TABLE review(
   created bigint not null default 0,
   updated bigint not null default 0,
   location_id bigint REFERENCES location(id),
-  offer_id bigint REFERENCES offer(id),
+  trip_id bigint REFERENCES trip(id),
   user_id bigint not null,
   title varchar(64) not null,
   review_text text,
@@ -97,7 +97,7 @@ CREATE TABLE image(
   created bigint not null default 0,
   updated bigint not null default 0,
   url varchar(256) NOT NULL,
-  offer_id bigint,
+  trip_id bigint,
   location_id bigint REFERENCES location(id),
   guide_id bigint REFERENCES guide(id),
   review_id bigint REFERENCES review(id),
@@ -105,7 +105,7 @@ CREATE TABLE image(
   PRIMARY KEY(id)
 );
 
-CREATE INDEX image_offer ON image(offer_id);
+CREATE INDEX image_trip ON image(trip_id);
 CREATE INDEX image_location_id ON image(location_id);
 CREATE INDEX image_guide ON image(guide_id);
 

@@ -1,8 +1,8 @@
 package com.theapproach.server
 
 import com.google.inject.{Inject, Module}
-import com.theapproach.server.api.{LocationApi, OfferApi}
-import com.theapproach.server.model.{LocationId, OfferId}
+import com.theapproach.server.api.{LocationApi, TripApi}
+import com.theapproach.server.model.{LocationId, TripId}
 import com.theapproach.server.modules.Modules
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finatra.http.filters.{CommonFilters, LoggingMDCFilter, TraceIdMDCFilter}
@@ -37,7 +37,7 @@ class ApproachServer extends HttpServiceBase {
 
 class ApproachController @Inject()(
   locationApi: LocationApi,
-  offerApi: OfferApi
+  tripApi: TripApi
 ) extends Controller {
 
   get("/location_page/:id") { request: Request =>
@@ -48,12 +48,12 @@ class ApproachController @Inject()(
     latency("location_page/${locationId.value}", locationApi.getLocationAndAssociatedData(locationId))
   }
 
-  get("/offer_page/:id") { request: Request =>
-    val offerId = OfferId(request.params("id").toLong)
+  get("/trip_page/:id") { request: Request =>
+    val tripId = TripId(request.params("id").toLong)
 
-    logger.info(s"Called offer_page/${offerId.value}")
+    logger.info(s"Called trip_page/${tripId.value}")
 
-    latency(s"location_page/${offerId.value}", offerApi.getOfferPageData(offerId))
+    latency(s"trip_page/${tripId.value}", tripApi.getTripPageData(tripId))
 
   }
 }

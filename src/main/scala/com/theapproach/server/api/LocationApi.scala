@@ -57,7 +57,6 @@ case class LocationPageResult(
   reviews: List[LocationReviewResponse]
 //  zoneData: Option[Location],
 //  routeMetadata: RouteMetadata,
-//  offers: List[Offer]
 )
 
 case class SubLocationResult(

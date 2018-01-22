@@ -4,12 +4,11 @@
 
 package com.theapproach.server.db
 
-
 case class ImageDAO(
   id: Long,
   url: String,
   created: Long,
-  offerId: Option[Long],
+  tripId: Option[Long],
   locationId: Option[Long],
   guideId: Option[Long],
   reviewId: Option[Long],
@@ -53,7 +52,7 @@ case class GuideDAO(
   aboutInfo: Option[String]
 )
 
-case class OfferDAO(
+case class TripDAO(
   id: Long,
   created: Long,
   updated: Long,

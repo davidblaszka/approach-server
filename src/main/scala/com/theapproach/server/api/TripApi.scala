@@ -10,20 +10,20 @@ import com.theapproach.server.model._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class OfferApi @Inject()(
+class TripApi @Inject()(
   db: DbAccess
 ) {
 
-  def getOfferPageData(id: OfferId): Future[Option[OfferPageData]] = {
-    db.getOfferData(id).map(_.map(result => {
-      OfferPageData(
-        offer = OfferConversions.fromDAO(result.offer),
-        offerImages = result.offerImages.map(ImageConversions.fromDAO),
-        guideData = GuideDataForOfferPage(
+  def getTripPageData(id: TripId): Future[Option[TripPageData]] = {
+    db.getTripData(id).map(_.map(result => {
+      TripPageData(
+        trip = TripConversions.fromDAO(result.trip),
+        tripImages = result.tripImages.map(ImageConversions.fromDAO),
+        guideData = GuideDataForTripPage(
           GuideConversions.fromDAO(result.guide.guide),
           ImageConversions.fromDAO(result.guide.image)
         ),
-        locationData = LocationDataForOfferPage(
+        locationData = LocationDataForTripPage(
           location = LocationConversions.fromDAO(result.location.location),
           images = result.location.images.map(ImageConversions.fromDAO)
         )
@@ -32,19 +32,19 @@ class OfferApi @Inject()(
   }
 }
 
-case class GuideDataForOfferPage(
+case class GuideDataForTripPage(
   guide: Guide,
   image: Image
 )
 
-case class LocationDataForOfferPage(
+case class LocationDataForTripPage(
   location: Location,
   images: List[Image]
 )
 
-case class OfferPageData(
-  offer: Offer,
-  offerImages: List[Image],
-  guideData: GuideDataForOfferPage,
-  locationData: LocationDataForOfferPage
+case class TripPageData(
+  trip: Trip,
+  tripImages: List[Image],
+  guideData: GuideDataForTripPage,
+  locationData: LocationDataForTripPage
 )

@@ -10,7 +10,7 @@ import io.paradoxical.global.tiny._
 case class ImageId(value: Long) extends LongValue
 case class LocationId(value: Long) extends LongValue
 case class LocationMetadataId(value: Long) extends LongValue
-case class OfferId(value: Long) extends LongValue
+case class TripId(value: Long) extends LongValue
 case class GuideId(value: Long) extends LongValue
 
 case class Rating(
@@ -58,13 +58,13 @@ case class Image(
   id: ImageId,
   created: DateTime,
   url: String,
-  offerId: Option[OfferId],
+  tripId: Option[TripId],
   locationId: Option[LocationId],
   guideId: Option[GuideId],
 )
 
-case class Offer(
-  id: OfferId,
+case class Trip(
+  id: TripId,
   created: DateTime,
   updated: DateTime,
   guideId: GuideId,

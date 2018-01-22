@@ -5,11 +5,10 @@
 package com.theapproach.server.db
 
 import com.google.inject.Inject
-import com.theapproach.server.model.{LocationId, OfferId}
+import com.theapproach.server.model.{LocationId, TripId}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import slick.jdbc.JdbcProfile
-
 
 class DbAccess @Inject()(val driver: JdbcProfile) {
 
@@ -22,7 +21,7 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
 
     def timeCreated = column[Long]("created")
 
-    def offerId = column[Option[Long]]("offer_id")
+    def tripId = column[Option[Long]]("trip_id")
 
     def locationId = column[Option[Long]]("location_id")
 
@@ -32,7 +31,7 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
 
     def position = column[Option[Long]]("position")
 
-    def * = (id, url, timeCreated, offerId, locationId, guideId, reviewId, position) <> (ImageDAO.tupled, ImageDAO.unapply)
+    def * = (id, url, timeCreated, tripId, locationId, guideId, reviewId, position) <> (ImageDAO.tupled, ImageDAO.unapply)
 
     def location = foreignKey("location", locationId, locationQuery)(_.id)
     def guide = foreignKey("guide", guideId, guideQuery)(_.id)
@@ -96,7 +95,7 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
     def * = (id, created, updated, name, location, aboutInfo) <> (GuideDAO.tupled, GuideDAO.unapply)
   }
 
-  class OfferTable(tag: Tag) extends Table[OfferDAO](tag, "offer") {
+  class TripTable(tag: Tag) extends Table[TripDAO](tag, "trip") {
     def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
     def created = column[Long]("created")
     def updated = column[Long]("updated")
@@ -106,14 +105,14 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
     def description = column[Option[String]]("description")
     def itinerary = column[Option[String]]("itinerary")
 
-    def * = (id, created, updated, guideId, locationId, heading, description, itinerary) <> (OfferDAO.tupled, OfferDAO.unapply)
+    def * = (id, created, updated, guideId, locationId, heading, description, itinerary) <> (TripDAO.tupled, TripDAO.unapply)
   }
 
   protected lazy val imageQuery: TableQuery[ImageTable] = TableQuery[ImageTable]
   protected lazy val locationQuery: TableQuery[LocationTable] = TableQuery[LocationTable]
   protected lazy val reviewQuery: TableQuery[ReviewTable] = TableQuery[ReviewTable]
   protected lazy val guideQuery: TableQuery[GuideTable] = TableQuery[GuideTable]
-  protected lazy val offerQuery: TableQuery[OfferTable] = TableQuery[OfferTable]
+  protected lazy val tripQuery: TableQuery[TripTable] = TableQuery[TripTable]
   protected lazy val db = Database.forConfig("database")
 
   protected val logger = org.slf4j.LoggerFactory.getLogger(getClass)
@@ -165,36 +164,36 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
     db.run(query)
   }
 
-  def getOfferData(offerId: OfferId): Future[Option[OfferPageDBResult]] = {
-    logger.info("Starting getOfferData call")
+  def getTripData(tripId: TripId): Future[Option[TripPageDBResult]] = {
+    logger.info(s"Starting getTripData call trip ID ${tripId.value}")
 
     val action = for {
-      offerResult <- offerQuery if offerResult.id === offerId.value
-      guideResult <- guideQuery if guideResult.id === offerResult.guideId
-      locationResult <- locationQuery if locationResult.id === offerResult.locationId
-      imageResult <- imageQuery if imageResult.locationId === offerResult.id || imageResult.guideId === offerResult.guideId || imageResult.locationId === offerResult.locationId
-    } yield (offerResult, guideResult, imageResult, locationResult)
+      tripResult <- tripQuery if tripResult.id === tripId.value
+      guideResult <- guideQuery if guideResult.id === tripResult.guideId
+      locationResult <- locationQuery if locationResult.id === tripResult.locationId
+      imageResult <- imageQuery if imageResult.locationId === locationResult.id || imageResult.guideId === tripResult.guideId || imageResult.tripId === tripResult.id
+    } yield (tripResult, guideResult, imageResult, locationResult)
 
-    val query = action.result.map((rows: Seq[(OfferDAO, GuideDAO, ImageDAO, LocationDAO)]) => {
-      val groupedOffers: Map[Long, Seq[(OfferDAO, GuideDAO, ImageDAO, LocationDAO)]] = rows.groupBy(_._1.id)
+    val query = action.result.map((rows: Seq[(TripDAO, GuideDAO, ImageDAO, LocationDAO)]) => {
+      val groupedTrips: Map[Long, Seq[(TripDAO, GuideDAO, ImageDAO, LocationDAO)]] = rows.groupBy(_._1.id)
 
-      val specificOfferOpt: Option[Seq[(OfferDAO, GuideDAO, ImageDAO, LocationDAO)]] = groupedOffers.keys.find(_ == offerId.value).flatMap(dao => groupedOffers.get(dao))
+      val specificTripOpt: Option[Seq[(TripDAO, GuideDAO, ImageDAO, LocationDAO)]] = groupedTrips.keys.find(_ == tripId.value).flatMap(dao => groupedTrips.get(dao))
 
-      specificOfferOpt.map(results => {
-        val offerDAO = results.head._1
+      specificTripOpt.map(results => {
+        val tripDAO = results.head._1
         val guideDAO = results.head._2
         val guideImage = results.find(_._3.guideId.exists(_ == guideDAO.id)).getOrElse(throw new Exception("guide has no image"))._3
-        val offerImages = results.filter(_._3.offerId.exists(_ == offerId.value)).map(_._3)
+        val tripImages = results.filter(_._3.tripId.exists(_ == tripId.value)).map(_._3)
         val locationDAO = results.head._4
         val locationImages = results.filter(_._3.locationId.exists(_ == locationDAO.id)).map(_._3)
 
-        OfferPageDBResult(
-          offer = offerDAO,
+        TripPageDBResult(
+          trip = tripDAO,
           guide = GuideAndImage(
             guide = guideDAO,
             image = guideImage
           ),
-          offerImages = offerImages.toList,
+          tripImages = tripImages.toList,
           location = LocationAndImages(
             location = locationDAO,
             images = locationImages.toList
@@ -207,10 +206,10 @@ class DbAccess @Inject()(val driver: JdbcProfile) {
   }
 }
 
-case class OfferPageDBResult(
-  offer: OfferDAO,
+case class TripPageDBResult(
+  trip: TripDAO,
   guide: GuideAndImage,
-  offerImages: List[ImageDAO],
+  tripImages: List[ImageDAO],
   location: LocationAndImages
 )
 

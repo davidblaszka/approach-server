@@ -14,7 +14,7 @@ object ImageConversions {
       id = ImageId(dao.id),
       url = dao.url,
       created = new DateTime(dao.created, DateTimeZone.UTC),
-      offerId = dao.offerId.map(OfferId),
+      tripId = dao.tripId.map(TripId),
       locationId = dao.locationId.map(LocationId),
       guideId = dao.guideId.map(GuideId)
     )
@@ -42,10 +42,10 @@ object LocationConversions {
   }
 }
 
-object OfferConversions {
-  def fromDAO(dao: OfferDAO): Offer = {
-    Offer(
-      id = OfferId(dao.id),
+object TripConversions {
+  def fromDAO(dao: TripDAO): Trip = {
+    Trip(
+      id = TripId(dao.id),
       created = new DateTime(dao.created, DateTimeZone.UTC),
       updated = new DateTime(dao.updated, DateTimeZone.UTC),
       guideId = GuideId(dao.guideId),
